@@ -47,9 +47,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
         
-        
-        
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -80,7 +77,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         newEvent.accessibilityValue = ""
      
-
+        tituloLibro = ""
+        autores = ""
+        imagenPortada = nil
+        
         // Save the context.
         /*do {
             try context.save()
@@ -119,10 +119,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
-                controller.numISBN = self.numISBN
-                controller.titulo2 = self.tituloLibro
-                controller.autores2 = self.autores
-                controller.imagenPortada2 = self.imagenPortada
+                controller.tituloLibro = self.tituloLibro
+                controller.autores = self.autores
+                controller.imagenPortada = self.imagenPortada
+                
             }
             
           }

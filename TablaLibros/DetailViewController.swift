@@ -21,9 +21,7 @@ class DetailViewController: UIViewController {
     var hayPortada: Bool?
     var hayConexion: Bool?
 
-    var imagenPortada2: UIImage?
-    var titulo2: String = ""
-    var autores2: String = ""
+   
     
     override func viewWillAppear(_ animated: Bool) {
         
@@ -36,10 +34,6 @@ class DetailViewController: UIViewController {
         // Update the user interface for the detail item.
         if detailItem != nil {
           
-                tituloText.text = titulo2
-                autoresText.text = autores2
-                imagenView.image = imagenPortada2
-            
         }
     }
 
