@@ -37,10 +37,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
         navigationItem.rightBarButtonItem = addButton
+    
         if let split = splitViewController {
             let controllers = split.viewControllers
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
+        
+        vistaISBN.isHidden = true
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -58,38 +61,40 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     @IBAction func buscarISBN(_ sender: Any) {
         
         self.numISBN = vistaISBN.text!
-        codigosISBNArrays.append(numISBN)
-        Asincrono(codigoISBN: vistaISBN.text!)
+        Asincrono(codigoISBN: self.numISBN)
         vistaISBN.text = "número ISBN"
         vistaISBN.isHidden = true
-        codigosISBNArrays.append(tituloLibro)
+        codigosISBNArrays.append(numISBN)
+        tituloCeldasArray.append(tituloLibro)
         
-    }
-    
-    
-    func insertNewObject(_ sender: Any) {
+        
         let context = self.fetchedResultsController.managedObjectContext
         let newEvent = Event(context: context)
+        newEvent.accessibilityValue = self.tituloLibro
         
-        vistaISBN.isHidden = false
-        
-        // If appropriate, configure the new managed object.
-        
-        newEvent.accessibilityValue = ""
-     
-        tituloLibro = ""
-        autores = ""
-        imagenPortada = nil
-        
-        // Save the context.
-        /*do {
+    
+        do {
             try context.save()
         } catch {
             // Replace this implementation with code to handle the error appropriately.
             // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             let nserror = error as NSError
             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-        }*/
+        }
+
+    }
+    
+    func insertNewObject(_ sender: Any) {
+        
+        vistaISBN.isHidden = false
+        
+        // If appropriate, configure the new managed object.
+        
+        tituloLibro = ""
+        autores = ""
+        imagenPortada = nil
+        
+        //Save the context.
     }
 
     // MARK: - Segues
@@ -108,8 +113,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             
         }
         
-        
         if segue.identifier == "showDetail" {
+           
+            tituloLibro = ""
+            autores = ""
+            imagenPortada = nil
+            
             if let indexPath = tableView.indexPathForSelectedRow {
             let object = fetchedResultsController.object(at: indexPath)
                
@@ -129,9 +138,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
         }
 
-    
-    
-
     // MARK: - Table View
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -147,12 +153,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let event = fetchedResultsController.object(at: indexPath)
         configureCell(cell, withEvent: event)
-        
-        if tituloCeldasArray.count != 0 {
-            
-                cell.textLabel?.text = tituloCeldasArray[indexPath.row]
-        }
-        
         return cell
     }
 
@@ -241,14 +241,15 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 tableView.insertRows(at: [newIndexPath!], with: .fade)
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
-                
+            
                 if codigosISBNArrays.count != 0 {
-                
-                codigosISBNArrays.remove(at: (indexPath?.row)!)
                     
+                    codigosISBNArrays.remove(at: (indexPath?.row)!)
             }
+            
             case .update:
                 configureCell(tableView.cellForRow(at: indexPath!)!, withEvent: anObject as! Event)
+        
             case .move:
                 configureCell(tableView.cellForRow(at: indexPath!)!, withEvent: anObject as! Event)
                 tableView.moveRow(at: indexPath!, to: newIndexPath!)
@@ -272,7 +273,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func Asincrono(codigoISBN:String) {
         
         let urls = "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:\(codigoISBN)"
-        let url = NSURL(string: urls)
+        let url: NSURL? = NSURL(string: urls)
         let datos: NSData? = NSData(contentsOf: url! as URL)
         
         if datos != nil {
