@@ -15,11 +15,26 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var managedObjectContext: NSManagedObjectContext? = nil
 
 
+    @IBOutlet weak var vistaISBN: UITextField!
+    
+    var numISBN: String = ""
+    var tituloLibro: String = ""
+    var autores:String = ""
+    var imagenPortada: UIImage? = nil
+    var hayPortada: Bool = false
+    var hayConexion: Bool = false
+    
+    var tituloCeldasArray = [String?]()
+    
+    var codigosISBNArrays = [String?]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         navigationItem.leftBarButtonItem = editButtonItem
 
+        self.title = "Tabla de Libros"
+        
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
         navigationItem.rightBarButtonItem = addButton
         if let split = splitViewController {
@@ -31,6 +46,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func viewWillAppear(_ animated: Bool) {
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
+        
+        
+        
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -38,37 +57,80 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         // Dispose of any resources that can be recreated.
     }
 
+    
+    @IBAction func buscarISBN(_ sender: Any) {
+        
+        self.numISBN = vistaISBN.text!
+        codigosISBNArrays.append(numISBN)
+        Asincrono(codigoISBN: vistaISBN.text!)
+        vistaISBN.text = "número ISBN"
+        vistaISBN.isHidden = true
+        codigosISBNArrays.append(tituloLibro)
+        
+    }
+    
+    
     func insertNewObject(_ sender: Any) {
         let context = self.fetchedResultsController.managedObjectContext
         let newEvent = Event(context: context)
-             
+        
+        vistaISBN.isHidden = false
+        
         // If appropriate, configure the new managed object.
-        newEvent.timestamp = NSDate()
+        
+        newEvent.accessibilityValue = ""
+     
 
         // Save the context.
-        do {
+        /*do {
             try context.save()
         } catch {
             // Replace this implementation with code to handle the error appropriately.
             // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             let nserror = error as NSError
             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-        }
+        }*/
     }
 
     // MARK: - Segues
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier != "showDetail" {
+            
+            let sigVista = segue.destination as! DetailViewController
+            sigVista.numISBN = self.numISBN
+            sigVista.tituloLibro = self.tituloLibro
+            sigVista.autores = self.autores
+            sigVista.imagenPortada = self.imagenPortada
+            sigVista.hayPortada = self.hayPortada
+            sigVista.hayConexion = self.hayConexion
+            
+        }
+        
+        
         if segue.identifier == "showDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
             let object = fetchedResultsController.object(at: indexPath)
+               
+                Asincrono(codigoISBN: codigosISBNArrays[indexPath.row]!)
+                
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
+                controller.numISBN = self.numISBN
+                controller.titulo2 = self.tituloLibro
+                controller.autores2 = self.autores
+                controller.imagenPortada2 = self.imagenPortada
             }
+            
+          }
+    
         }
-    }
+
+    
+    
 
     // MARK: - Table View
 
@@ -85,6 +147,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let event = fetchedResultsController.object(at: indexPath)
         configureCell(cell, withEvent: event)
+        
+        if tituloCeldasArray.count != 0 {
+            
+                cell.textLabel?.text = tituloCeldasArray[indexPath.row]
+        }
+        
         return cell
     }
 
@@ -109,10 +177,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
 
+    
     func configureCell(_ cell: UITableViewCell, withEvent event: Event) {
-        cell.textLabel!.text = event.timestamp!.description
+    
+        cell.textLabel!.text = event.accessibilityValue
+        
     }
-
+    
     // MARK: - Fetched results controller
 
     var fetchedResultsController: NSFetchedResultsController<Event> {
@@ -170,6 +241,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 tableView.insertRows(at: [newIndexPath!], with: .fade)
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
+                
+                if codigosISBNArrays.count != 0 {
+                
+                codigosISBNArrays.remove(at: (indexPath?.row)!)
+                    
+            }
             case .update:
                 configureCell(tableView.cellForRow(at: indexPath!)!, withEvent: anObject as! Event)
             case .move:
@@ -191,5 +268,74 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
      }
      */
 
+    
+    func Asincrono(codigoISBN:String) {
+        
+        let urls = "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:\(codigoISBN)"
+        let url = NSURL(string: urls)
+        let datos: NSData? = NSData(contentsOf: url! as URL)
+        
+        if datos != nil {
+            
+            do {
+                let json = try JSONSerialization.jsonObject(with: datos! as Data, options: JSONSerialization.ReadingOptions.mutableLeaves)
+                let dic1 = json as! NSDictionary
+                let dic2 = dic1["ISBN:\(codigoISBN)"] as! NSDictionary
+                self.tituloLibro = dic2["title"] as! NSString as String
+                let dic3 = dic2["authors"] as! NSArray
+                
+                var autor: String = ""
+                
+                for i in 0..<dic3.count {
+                    
+                    let dic = dic3[i] as! NSDictionary
+                    autor = dic["name"] as! NSString as String
+                    self.autores += "\(autor) "
+                }
+                
+                if dic2["cover"] != nil {
+                    
+                    self.hayPortada = true
+                    let dic4 = dic2["cover"] as! NSDictionary
+                    let dic5 = dic4["large"] as! NSString as String
+                    
+                    let url = NSURL(string: dic5)
+                    
+                    
+                    let datos2: NSData? = NSData(contentsOf: url! as URL)
+                    
+                    if datos2 != nil {
+                    let imagen = UIImage(data: datos2! as Data)
+                    self.imagenPortada = imagen
+                    }
+                    
+                }
+                else {
+                    
+                    self.hayPortada = false
+                   
+                }
+                
+                self.hayConexion = true
+                }
+        
+                catch {
+                
+                }
+        
+            }
+            
+        else {
+                
+            self.hayConexion = false
+                
+        }
+    }
+    
 }
+    
+    
+    // "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:\(self.numISBN.text!)"
+    
+
 
