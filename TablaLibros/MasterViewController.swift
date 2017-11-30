@@ -24,9 +24,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var hayPortada: Bool = false
     var hayConexion: Bool = false
     
-    var tituloCeldasArray = [String?]()
-    
     var codigosISBNArrays = [String?]()
+    
+    //var eventosArray = [Event]()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,7 +38,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
         navigationItem.rightBarButtonItem = addButton
-    
+        
         if let split = splitViewController {
             let controllers = split.viewControllers
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
@@ -56,7 +57,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
     
     @IBAction func buscarISBN(_ sender: Any) {
         
@@ -65,14 +65,15 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         vistaISBN.text = "número ISBN"
         vistaISBN.isHidden = true
         codigosISBNArrays.append(numISBN)
-        tituloCeldasArray.append(tituloLibro)
-        
         
         let context = self.fetchedResultsController.managedObjectContext
         let newEvent = Event(context: context)
-        newEvent.accessibilityValue = self.tituloLibro
-        
     
+        // If appropriate, configure the new managed object.
+         newEvent.tituloLibro = self.tituloLibro
+        
+        //Save the context.
+        
         do {
             try context.save()
         } catch {
@@ -81,22 +82,21 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             let nserror = error as NSError
             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
         }
-
+        
+      
+        
     }
     
     func insertNewObject(_ sender: Any) {
-        
-        vistaISBN.isHidden = false
-        
-        // If appropriate, configure the new managed object.
         
         tituloLibro = ""
         autores = ""
         imagenPortada = nil
         
-        //Save the context.
+        vistaISBN.isHidden = false
     }
-
+    
+       
     // MARK: - Segues
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -150,8 +150,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let event = fetchedResultsController.object(at: indexPath)
+        let event = fetchedResultsController.object(at:indexPath)
         configureCell(cell, withEvent: event)
         return cell
     }
@@ -180,8 +181,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     func configureCell(_ cell: UITableViewCell, withEvent event: Event) {
     
-        cell.textLabel!.text = event.accessibilityValue
-        
+       cell.textLabel!.text = event.tituloLibro!.description
     }
     
     // MARK: - Fetched results controller
@@ -197,7 +197,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         fetchRequest.fetchBatchSize = 20
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: "tituloLibro", ascending: true)
         
         fetchRequest.sortDescriptors = [sortDescriptor]
         
@@ -260,14 +260,14 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         tableView.endUpdates()
     }
 
-    /*
+    
      // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
      
-     func controllerDidChangeContent(controller: NSFetchedResultsController) {
+     //func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
          // In the simplest, most efficient, case, reload the table view.
-         tableView.reloadData()
-     }
-     */
+         //tableView.reloadData()
+     //}
+    
 
     
     func Asincrono(codigoISBN:String) {
