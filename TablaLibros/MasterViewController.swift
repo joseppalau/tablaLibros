@@ -21,8 +21,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var tituloLibro: String = ""
     var autores:String = ""
     var imagenPortada: UIImage? = nil
-    var hayPortada: Bool = false
-    var hayConexion: Bool = false
+    var hayConexion: Bool = true
     
     var codigosISBNArrays = [String?]()
     
@@ -44,6 +43,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
         
+        
+        hayConexion = true
         vistaISBN.isHidden = true
     }
 
@@ -111,7 +112,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             sigVista.tituloLibro = self.tituloLibro
             sigVista.autores = self.autores
             sigVista.imagenPortada = self.imagenPortada
-            sigVista.hayPortada = self.hayPortada
             sigVista.hayConexion = self.hayConexion
             
         }
@@ -294,7 +294,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 
                 if dic2["cover"] != nil {
                     
-                    self.hayPortada = true
                     let dic4 = dic2["cover"] as! NSDictionary
                     let dic5 = dic4["large"] as! NSString as String
                     
@@ -309,16 +308,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                     }
                     
                 }
-                else {
-                    
-                    self.hayPortada = false
-                   
-                }
                 
                 self.hayConexion = true
+                
                 }
         
                 catch {
+                    
                 
                 }
         

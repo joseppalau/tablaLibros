@@ -13,13 +13,13 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var tituloText: UITextField!
     @IBOutlet weak var autoresText: UITextField!
     @IBOutlet weak var imagenView: UIImageView!
+    @IBOutlet weak var labelConexion: UILabel!
     
     var numISBN: String = ""
     var tituloLibro: String = ""
     var autores: String = ""
     var imagenPortada: UIImage?
-    var hayPortada: Bool?
-    var hayConexion: Bool?
+    var hayConexion = true
 
    
     
@@ -28,6 +28,12 @@ class DetailViewController: UIViewController {
         tituloText.text = tituloLibro
         autoresText.text = autores
         imagenView.image = imagenPortada
+        
+        if hayConexion == false {
+            
+            labelConexion.text = "No hay Conexion"
+            labelConexion.backgroundColor = UIColor(red: 170/255, green: 39/255, blue: 59/255, alpha: 1)
+        }
     }
     
     func configureView() {
