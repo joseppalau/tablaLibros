@@ -70,8 +70,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let newEvent = Event(context: context)
     
         // If appropriate, configure the new managed object.
-         newEvent.tituloLibro = self.tituloLibro
+        newEvent.tituloLibro = self.tituloLibro
+        newEvent.autores = self.autores
         
+        if imagenPortada != nil {
+        newEvent.imagen = UIImagePNGRepresentation(imagenPortada!)! as NSData
+        }
+    
         //Save the context.
         
         do {
@@ -82,8 +87,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             let nserror = error as NSError
             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
         }
-        
-      
         
     }
     
@@ -115,23 +118,23 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         if segue.identifier == "showDetail" {
            
-            tituloLibro = ""
+            /*tituloLibro = ""
             autores = ""
-            imagenPortada = nil
+            imagenPortada = nil*/
             
             if let indexPath = tableView.indexPathForSelectedRow {
             let object = fetchedResultsController.object(at: indexPath)
-               
-                Asincrono(codigoISBN: codigosISBNArrays[indexPath.row]!)
                 
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
-                controller.tituloLibro = self.tituloLibro
-                controller.autores = self.autores
-                controller.imagenPortada = self.imagenPortada
+                controller.tituloLibro = object.tituloLibro!
+                controller.autores = object.autores!
                 
+                if object.imagen != nil {
+                controller.imagenPortada = UIImage(data:object.imagen! as Data, scale:1.0 )
+                }
             }
             
           }
@@ -181,7 +184,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     func configureCell(_ cell: UITableViewCell, withEvent event: Event) {
     
-       cell.textLabel!.text = event.tituloLibro!.description
+       cell.textLabel!.text = event.tituloLibro
     }
     
     // MARK: - Fetched results controller
@@ -197,7 +200,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         fetchRequest.fetchBatchSize = 20
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "tituloLibro", ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: "tituloLibro", ascending: false)
         
         fetchRequest.sortDescriptors = [sortDescriptor]
         
@@ -242,11 +245,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
             
-                if codigosISBNArrays.count != 0 {
-                    
-                    codigosISBNArrays.remove(at: (indexPath?.row)!)
-            }
-            
             case .update:
                 configureCell(tableView.cellForRow(at: indexPath!)!, withEvent: anObject as! Event)
         
@@ -273,8 +271,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func Asincrono(codigoISBN:String) {
         
         let urls = "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:\(codigoISBN)"
-        let url: NSURL? = NSURL(string: urls)
-        let datos: NSData? = NSData(contentsOf: url! as URL)
+        let url: NSURL = NSURL(string: urls)!
+        let datos: NSData? = NSData(contentsOf: url as URL)
         
         if datos != nil {
             
