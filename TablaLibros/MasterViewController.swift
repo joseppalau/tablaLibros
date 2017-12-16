@@ -22,6 +22,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var autores:String = ""
     var imagenPortada: UIImage? = nil
     var hayConexion: Bool = true
+    var hayImagen:Bool = true
     
     var codigosISBNArrays = [String?]()
     
@@ -113,6 +114,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             sigVista.autores = self.autores
             sigVista.imagenPortada = self.imagenPortada
             sigVista.hayConexion = self.hayConexion
+            sigVista.hayImagen = self.hayImagen
             
         }
         
@@ -305,6 +307,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                     if datos2 != nil {
                     let imagen = UIImage(data: datos2! as Data)
                     self.imagenPortada = imagen
+                    }
+                    else {
+                        hayImagen = false
                     }
                     
                 }

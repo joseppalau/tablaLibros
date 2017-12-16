@@ -19,10 +19,10 @@ class DetailViewController: UIViewController {
     var tituloLibro: String = ""
     var autores: String = ""
     var imagenPortada: UIImage?
-    var hayConexion = true
+    var hayConexion: Bool?
+    var hayImagen: Bool?
 
-   
-    
+
     override func viewWillAppear(_ animated: Bool) {
         
         tituloText.text = tituloLibro
@@ -31,8 +31,23 @@ class DetailViewController: UIViewController {
         
         if hayConexion == false {
             
+            labelConexion.isHidden = false
             labelConexion.text = "No hay Conexion"
             labelConexion.backgroundColor = UIColor(red: 170/255, green: 39/255, blue: 59/255, alpha: 1)
+        }
+        
+        else {
+            labelConexion.isHidden = true
+        }
+        
+        if hayImagen == false {
+            
+            labelConexion.isHidden = false
+            labelConexion.text = "No hay foto"
+            labelConexion.backgroundColor = UIColor(red: 170/255, green: 39/255, blue: 59/255, alpha: 1)            
+        }
+        else {
+            hayImagen = true
         }
     }
     
@@ -47,6 +62,7 @@ class DetailViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         //configureView()
+        
     }
 
     override func didReceiveMemoryWarning() {
